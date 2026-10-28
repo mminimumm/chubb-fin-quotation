@@ -1,20 +1,52 @@
-# ระบบสแกนตารางกรมธรรม์ & ออกใบเสนอราคาย้ายค่ายอัตโนมัติ (CHUBB x ฟิน โบรคเกอร์)
+# ระบบสแกนตารางกรมธรรม์ & ออกใบเสนอราคาย้ายค่ายอัตโนมัติ (CHUBB x ฟิน โบรคเกอร์) - Full-Stack React Edition
 
-ระบบเว็บแอปพลิเคชันสำหรับสแกนรูปภาพ **ตารางกรมธรรม์ประกันภัยรถยนต์ (`ตาราง กธ.`)** หรือ **ใบเตือนต่ออายุ (`ใบเตือนบริษัท` / `ใบเตือนโบรคเกอร์`)** ด้วย Google Gemini AI (`gemini-3.8-flash` / `gemini-3.5-flash-lite`) พร้อมระบบตรวจสอบข้อมูลก่อนยืนยัน (Human-in-the-Loop Verification) และออกใบเสนอราคาขนาด **A4 PDF** พร้อมใช้งาน
+เว็บแอปพลิเคชันพัฒนาด้วย **React 19 + TypeScript + Express (`server.ts`) + Vite + Tailwind CSS** สำหรับสแกนรูปภาพ **ตารางกรมธรรม์ประกันภัยรถยนต์ (`ตาราง กธ.`)** หรือ **ใบเตือนต่ออายุ (`ใบเตือนบริษัท` / `ใบเตือนโบรคเกอร์`)** ด้วย Google Gemini Vision AI (`gemini-3.8-flash`) ผ่านฝั่ง Server-Side พร้อมระบบตรวจสอบข้อมูลก่อนยืนยัน (Human-in-the-Loop Verification) และออกใบเสนอราคาขนาด **A4 PDF** พร้อมพิมพ์และส่งแชท LINE
+
+---
+
+## สถาปัตยกรรมระบบ (Project Architecture)
+
+- **Frontend**: React 19 + TypeScript + Tailwind CSS (พร้อม Print Stylesheet ขนาด A4 Portrait)
+- **Backend**: Express (`server.ts`) เชื่อมต่อ `@google/genai` SDK ผ่าน `process.env.GEMINI_API_KEY`
+- **OCR Engine**: Endpoint `POST /api/ocr` ใช้โมเดล `gemini-3.8-flash` พร้อม `responseSchema` (Structured JSON Output)
+
+### โครงสร้างโค้ด (Source Structure)
+
+```
+/
+├── server.ts                  # Express Backend Server & /api/ocr Gemini endpoint
+├── src/
+│   ├── components/
+│   │   ├── Header.tsx         # ส่วนหัว แบรนดิ้ง และ Stepper นำทาง 3 ขั้นตอน
+│   │   ├── Step1Upload.tsx    # Drag-and-drop, วางภาพ (Ctrl+V) และพรีเซ็ตตัวอย่าง
+│   │   ├── Step2Verify.tsx    # หน้าตรวจทานข้อมูล ตรวจสอบเงื่อนไขอัตโนมัติ และฟอร์มแก้ไข
+│   │   └── Step3Pdf.tsx       # ใบเสนอราคาขนาด A4 Portrait พร้อมพิมพ์และคัดลอกข้อความ LINE
+│   ├── data/
+│   │   └── constants.ts       # ข้อมูล 21 บริษัทประกัน, 77 จังหวัด, 4 โครงการ และเคสตัวอย่าง
+│   ├── services/
+│   │   └── gemini.ts          # Client service เรียกใช้งาน /api/ocr และจับคู่ข้อมูลเข้าฟอร์ม
+│   ├── utils/
+│   │   └── calculator.ts      # ฟังก์ชันคำนวณเบี้ย ส่วนลด ทุนประกัน และเกณฑ์ขั้นต่ำ
+│   ├── types.ts               # Data models & TypeScript interfaces
+│   ├── App.tsx                # สถานะหลักของแอปพลิเคชันและการเชื่อมต่อ
+│   ├── main.tsx               # จุดเริ่มต้นเมานต์ React
+│   └── index.css              # สไตล์หลักและ Tailwind imports
+├── index.html                 # Entry point พร้อมฟอนต์ Sarabun และ CSS พิมพ์ A4
+├── package.json               # คำสั่ง dev, build, start, lint
+└── vite.config.ts             # กำหนดค่า Vite
+```
+
+---
 
 ## ขั้นตอนการทำงาน (3-Step User Journey)
 
 1. **ส่งรูปตาราง กธ. หรือ ใบเตือนต่ออายุ (Upload / Paste Image)**
-   - รองรับการอัปโหลดรูปภาพ หรือกด `Ctrl+V` / `Cmd+V` วางรูปจากแชท LINE
-   - ใช้ **Gemini Vision + Structured Output (JSON Schema)** อ่านข้อมูลจากเอกสารทุกบริษัทประกันภัยโดยไม่จำกัดฟอร์แมตหน้าตาราง
-2. **ตรวจทานข้อมูลก่อนยืนยัน (Verification & Rule Check)**
-   - ตรวจสอบเงื่อนไขโครงการอัตโนมัติ (บริษัทประกันเดิม 21 บริษัท, อายุรถ, รหัสรถ `110`/`320`, และเรทเบี้ยขั้นต่ำแยกตามภูมิภาคครบ 77 จังหวัด)
+   - รองรับการอัปโหลดไฟล์รูปภาพ หรือกด `Ctrl+V` / `Cmd+V` เพื่อวางภาพที่แคปมาจากแชท LINE
+   - ประมวลผลด้วย Gemini Vision ผ่านเซิร์ฟเวอร์หลังบ้านอัตโนมัติโดยที่ผู้ใช้งานไม่ต้องตั้งค่า API Key เอง
+2. **ตรวจทานข้อมูลก่อนยืนยัน (Human-in-the-Loop Verification & Rule Check)**
+   - ตรวจสอบเงื่อนไขโครงการอัตโนมัติ: อายุรถ (ไม่เกิน 5, 7, หรือ 15 ปี), รหัสรถ (`110`/`320`), และเรทเบี้ยขั้นต่ำตามภูมิภาคครบ 77 จังหวัด
    - เปรียบเทียบความคุ้มค่าระหว่าง **ทางเลือก A (ใช้ตาราง กธ. ลด 5% | ทุนใหม่ 90%)** กับ **ทางเลือก B (ใช้ใบเตือนบริษัท ลด 10% | ทุนใหม่ 100%)**
+   - แก้ไขข้อมูลได้ทุกช่องพร้อมคำนวณเบี้ยสุทธิและทุนใหม่แบบเรียลไทม์
 3. **ออกใบเสนอราคา A4 PDF พร้อมใช้ (Print / Export PDF)**
-   - จัดหน้าใบเสนอราคาขนาด A4 Portrait สวยงาม กดปุ่ม **Export PDF / พิมพ์ใบเสนอราคา (A4)** หรือ **คัดลอกข้อความสรุปส่ง LINE** ได้ทันที
-
-## วิธีเชื่อมต่อกับ Google AI Studio (ใช้โควต้าฟรี)
-
-1. ไปที่ [Google AI Studio (aistudio.google.com/apikey)](https://aistudio.google.com/apikey) เพื่อสร้าง **Gemini API Key** (มี Free Tier ใช้งานฟรี)
-2. เปิดหน้าเว็บแอปพลิเคชัน แล้วคลิกปุ่ม **`⚙️ ตั้งค่า AI OCR`** ที่มุมขวาบน
-3. เลือกโมเดล (`gemini-3.8-flash` หรือ `gemini-3.5-flash-lite`) และวาง API Key ลงไป (คีย์จะถูกเก็บไว้ใน `localStorage` ของเบราว์เซอร์เครื่องคุณเท่านั้น ไม่ถูกเปิดเผยในโค้ดสาธารณะ)
+   - จัดหน้าใบเสนอราคาตามมาตรฐานทางการขนาด A4 Portrait พร้อมโลโก้ CHUBB x FIN BROKER
+   - กดปุ่ม **Export PDF / พิมพ์ใบเสนอราคา (A4)** บันทึกเป็น PDF หรือกด **คัดลอกข้อความส่ง LINE** ส่งให้ลูกค้าได้ทันที

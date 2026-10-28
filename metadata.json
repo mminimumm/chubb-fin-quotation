@@ -1,0 +1,11 @@
+{
+  "name": "CHUBB x Fin Broker Motor Quotation",
+  "description": "ระบบออกใบเสนอราคาโอนย้ายประกันภัยรถยนต์ CHUBB x ฟิน โบรคเกอร์ พร้อม AI OCR สแกนตารางกรมธรรม์ และออกใบเสนอราคา A4 PDF",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
