@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบออกใบเสนอราคาโอนย้ายประกันภัยรถยนต์ | CHUBB x ฟิน โบรคเกอร์</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+    }
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      #step-1, #step-2 {
+        display: none !important;
+      }
+      #step-3 {
+        display: block !important;
+      }
+      #pdf-sheet {
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-6">
+
+  <!-- Top Header & Navigation -->
+  <div class="max-w-6xl mx-auto space-y-5">
+    <header class="no-print bg-white border border-slate-200 rounded-2xl p-4 md:p-5 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-start gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shrink-0 shadow-sm">
+          CF
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-indigo-600 text-white">CHUBB × FIN BROKER</span>
+            <span class="text-xs text-slate-500 font-medium">Ver.01072026 • ระบบออกใบเสนอราคาย้ายค่ายอัตโนมัติ</span>
+          </div>
+          <h1 class="text-lg md:text-xl font-extrabold text-slate-900 mt-0.5">
+            ระบบสแกนตารางกรมธรรม์ & ออกใบเสนอราคา PDF พร้อมใช้
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Stepper -->
+        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+          <button onclick="goToStep(1)" id="step-btn-1" class="px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">1</span>
+            <span>ส่งรูป กธ./ใบเตือน</span>
+          </button>
+          <span class="text-slate-400">→</span>
+          <button onclick="goToStep(2)" id="step-btn-2" class="px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center font-bold">2</span>
+            <span>ตรวจข้อมูล</span>
+          </button>
+          <span class="text-slate-400">→</span>
+          <button onclick="goToStep(3)" id="step-btn-3" class="px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center font-bold">3</span>
+            <span>ใบเสนอราคา PDF</span>
+          </button>
+        </div>
+
+        <!-- API Key Modal Button -->
+        <button onclick="toggleApiModal(true)" class="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <span>⚙️</span>
+          <span id="api-status-label">ตั้งค่า AI OCR</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- STEP 1: UPLOAD OR PASTE IMAGE -->
+    <section id="step-1" class="no-print space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Dropzone -->
+        <div id="dropzone" class="lg:col-span-2 bg-white border-2 border-dashed border-indigo-300 hover:border-indigo-500 rounded-2xl p-8 text-center flex flex-col items-center justify-center space-y-4 transition shadow-sm">
+          <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl shadow-inner">
+            📷
+          </div>
+          <div class="space-y-1 max-w-lg">
+            <h2 class="text-lg font-extrabold text-slate-900">ส่งรูปตารางกรมธรรม์เดิม หรือ ใบเตือนต่ออายุ</h2>
+            <p class="text-xs text-slate-500">
+              ลากไฟล์รูปมาวางที่นี่, กดปุ่มเลือกรูป หรือกด <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono">Ctrl+V</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono">Cmd+V</kbd> เพื่อวางรูปที่ก๊อปมาจาก LINE ได้ทันที
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <label class="cursor-pointer px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition shadow-sm">
+              📂 เลือกรูปภาพจากเครื่อง / มือถือ
+              <input type="file" id="file-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
+            </label>
+          </div>
+
+          <!-- Loading Spinner during AI OCR -->
+          <div id="ocr-loading" class="hidden w-full max-w-md p-4 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-semibold flex items-center justify-center gap-3">
+            <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span id="ocr-loading-text">กำลังใช้ Gemini AI อ่านข้อมูลจากรูปตารางกรมธรรม์...</span>
+          </div>
+
+          <!-- Sample Presets -->
+          <div class="pt-4 border-t border-slate-100 w-full space-y-2">
+            <div class="text-xs text-slate-400 font-medium">หรือคลิกเลือกเคสตัวอย่างเพื่อดูการทำงานทันที:</div>
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <button onclick="loadPreset('isuzu_2014', false, false)" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100">
+                🚚 เคสจริง: Isuzu D-Max 2014 (กรุงเทพประกันภัย)
+              </button>
+              <button onclick="loadPreset('vios_2019', false, false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
+                🚗 Toyota Vios 2019 (ตาราง กธ.)
+              </button>
+              <button onclick="loadPreset('ativ_2024', false, false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
+                🚗 Yaris Ativ 2024 (ใบเตือนบริษัท)
+              </button>
+              <button onclick="loadPreset('hyundai_2020', false, false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">
+                ⚠️ Hyundai ZS 2020 (ซ่อมห้าง 7 ปี ติดขั้นต่ำ)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journey Guide Card -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+          <h3 class="text-sm font-extrabold text-slate-900">ขั้นตอนการทำงาน (User Journey)</h3>
+          <ol class="space-y-3 text-xs">
+            <li class="flex gap-3">
+              <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center shrink-0">1</span>
+              <div>
+                <div class="font-bold text-slate-900">ส่งรูปตาราง กธ. หรือ ใบเตือน</div>
+                <p class="text-slate-500">AI สกัดชื่อลูกค้า, บริษัทเดิม, รหัสรถ (110/320), ทะเบียน, จังหวัด, ปีผลิต, ทุนเดิม และเบี้ยรวมอัตโนมัติ</p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center shrink-0">2</span>
+              <div>
+                <div class="font-bold text-slate-900">ตรวจทานข้อมูลก่อนยืนยัน (Verify)</div>
+                <p class="text-slate-500">เทียบข้อมูลกับรูปจริง เช็คเกณฑ์อายุรถ/รหัสรถ/เบี้ยขั้นต่ำ 77 จังหวัด และลองสลับเทียบใบเตือน (ลด 10%) vs ตาราง กธ. (ลด 5%)</p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center shrink-0">3</span>
+              <div>
+                <div class="font-bold text-slate-900">Export PDF ขนาด A4 สวยงาม</div>
+                <p class="text-slate-500">ออกใบเสนอราคาพร้อมใช้ กดบันทึกเป็น PDF ขนาด A4 หรือคัดลอกข้อความสรุปส่ง LINE ได้ทันที</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: HUMAN-IN-THE-LOOP VERIFICATION -->
+    <section id="step-2" class="no-print hidden space-y-5">
+      <div class="bg-indigo-950 text-white rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">🔍</span>
+          <div>
+            <h2 class="text-sm font-extrabold">ขั้นตอนที่ 2: ตรวจสอบความถูกต้องของข้อมูลก่อนยืนยันออกใบเสนอราคา</h2>
+            <p class="text-xs text-indigo-200">กรุณาตรวจทานข้อมูลคู่กับรูปภาพต้นฉบับ สามารถแก้ไขตัวเลขหรือเปลี่ยนโครงการแล้วดูผลคำนวณทันที</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="goToStep(1)" class="px-3 py-2 rounded-xl bg-indigo-900 hover:bg-indigo-800 text-xs font-semibold">
+            ← ส่งรูปใหม่
+          </button>
+          <button onclick="goToStep(3)" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-extrabold shadow-sm">
+            ✅ ยืนยันข้อมูลถูกต้อง → ออกใบเสนอราคา PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Left Column: Original Image & Rule Checklist -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500">เอกสารต้นฉบับ & ผลตรวจเกณฑ์</h3>
+              <span id="ocr-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">พร้อมตรวจสอบ</span>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 text-xs space-y-2">
+              <img id="uploaded-img-el" class="hidden w-full rounded-lg object-contain max-h-64 mb-2 border border-slate-200 bg-white" alt="Uploaded Policy" />
+              <div class="font-bold text-sm text-slate-900" id="preview-doc-title">-</div>
+              <div class="text-slate-500" id="preview-doc-sub">-</div>
+            </div>
+
+            <div class="space-y-1.5 pt-1">
+              <div class="text-xs font-extrabold text-slate-700">เช็คเงื่อนไขโครงการอัตโนมัติ:</div>
+              <div id="rule-checklist" class="space-y-1.5 text-xs"></div>
+            </div>
+          </div>
+
+          <!-- Smart Upsell Comparison Card -->
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2.5 shadow-sm">
+            <div class="text-xs font-extrabold text-amber-900 flex items-center gap-1.5">
+              <span>💡</span>
+              <span>เปรียบเทียบสิทธิ์ A (ตาราง กธ.) vs B (ใบเตือนบริษัท)</span>
+            </div>
+            <p id="smart-tip-text" class="text-xs text-amber-900 leading-relaxed"></p>
+            <button id="smart-tip-btn" onclick="switchDocType('ใบเตือนบริษัท')" class="w-full px-3 py-2 rounded-xl bg-white border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-100 transition shadow-sm">
+              สลับประเภทเอกสารเพื่อเปรียบเทียบ
+            </button>
+          </div>
+        </div>
+
+        <!-- Middle Column: Editable Form -->
+        <div class="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 text-xs">
+          <div class="font-extrabold text-sm text-slate-900 border-b border-slate-100 pb-2.5">
+            1. ข้อมูลในใบเสนอราคา (แก้ไขได้ทุกช่อง)
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">โครงการย้ายค่าย</label>
+            <select id="f-campaign" onchange="recalculate()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-semibold">
+              <option value="chubb_std">โครงการ ย้ายค่าย "CHUBB ใจดี" x ฟิน โบรคเกอร์ (ซ่อมอู่)</option>
+              <option value="chubb_dealer7">โครงการ ย้ายค่าย "CHUBB ใจดี" (ซ่อมห้าง 7 ปี - รหัส 110)</option>
+              <option value="chubb_dealer5">โครงการ ย้ายค่าย "CHUBB ใจดี" (ซ่อมห้าง 5 ปี - รหัส 320)</option>
+              <option value="koompai">โครงการ ย้ายค่าย "คุ้มภัย สุดฟิน" x ฟิน โบรคเกอร์</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">เรียนคุณ (ชื่อลูกค้า)</label>
+              <input type="text" id="f-customer" oninput="recalculate()" class="w-full px-3 py-1.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">เจ้าหน้าที่ออกเอกสาร</label>
+              <input type="text" id="f-admin" value="ADMIN-FIN" oninput="recalculate()" class="w-full px-3 py-1.5 rounded-xl border border-slate-300" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ที่อยู่</label>
+            <input type="text" id="f-address" oninput="recalculate()" class="w-full px-3 py-1.5 rounded-xl border border-slate-300" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">บริษัทประกันเดิม</label>
+              <select id="f-insurer" onchange="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white">
+                <!-- Populated from 21 Insurers in CSV -->
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">วันที่เสนอราคา</label>
+              <input type="date" id="f-quotedate" value="2026-10-28" onchange="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">ทะเบียนรถ</label>
+              <input type="text" id="f-plate" oninput="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">ยี่ห้อ</label>
+              <input type="text" id="f-brand" oninput="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">รุ่น</label>
+              <input type="text" id="f-model" oninput="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">รหัสรถ</label>
+              <select id="f-vehcode" onchange="recalculate()" class="w-full px-2 py-1.5 rounded-xl border border-slate-300 bg-white">
+                <option value="110">110 (เก๋ง/4ประตู)</option>
+                <option value="320">320 (กระบะแค็บ)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">จังหวัด (ครบ 77 จว.)</label>
+              <select id="f-province" onchange="recalculate()" class="w-full px-2 py-1.5 rounded-xl border border-slate-300 bg-white">
+                <!-- Populated with all 77 Thai provinces -->
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">ปีรถผลิต (ค.ศ.)</label>
+              <input type="number" id="f-year" min="2012" max="2026" oninput="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300" />
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 space-y-2.5">
+            <div class="font-extrabold text-indigo-950">⚡ จุดสำคัญที่มีผลต่อเบี้ยและทุนประกัน</div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">โอนย้าย โดย (ประเภทเอกสาร)</label>
+              <select id="f-doctype" onchange="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-indigo-300 bg-white font-bold text-indigo-950">
+                <option value="ใบเตือนโบรค/ตาราง กธ.">ใบเตือนโบรค/ตาราง กธ. (ส่วนลด 5% | ทุนใหม่ 90%)</option>
+                <option value="ใบเตือนบริษัท">ใบเตือนบริษัท (ส่วนลด 10% | ทุนใหม่ 100%)</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">เบี้ยประกันเดิม (บาท)</label>
+                <input type="number" step="0.01" id="f-old-premium" oninput="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-indigo-300 bg-white font-extrabold" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">ทุนประกันเดิม (บาท)</label>
+                <input type="number" step="1000" id="f-old-sum" oninput="recalculate()" class="w-full px-2.5 py-1.5 rounded-xl border border-indigo-300 bg-white font-extrabold" />
+              </div>
+            </div>
+            <label class="flex items-center gap-1.5 cursor-pointer pt-1 text-slate-700 font-medium">
+              <input type="checkbox" id="f-round-sum" checked onchange="recalculate()" class="rounded text-indigo-600" />
+              <span>ปัดทุนประกันใหม่ลงหลักหมื่น (ตามสูตรไฟล์ต้นฉบับ)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Right Column: Live Calculation Summary -->
+        <div class="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4 text-xs">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <span class="font-extrabold text-sm text-slate-900">2. สรุปยอดคำนวณเบี้ยโอนย้าย</span>
+              <span id="calc-status-badge" class="px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800">ผ่านเกณฑ์</span>
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">โซนพื้นที่ / อายุรถ:</span>
+                <span class="font-bold text-slate-800" id="res-zone-age">-</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">เบี้ยประกันเดิม:</span>
+                <span class="font-bold text-slate-800" id="res-old-premium">-</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">ส่วนลดที่ได้รับ:</span>
+                <span class="font-bold text-indigo-700" id="res-discount-rate">-</span>
+              </div>
+
+              <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 space-y-2">
+                <div class="flex justify-between items-baseline">
+                  <span class="font-bold text-indigo-950">เบี้ยโอนย้ายสุทธิ:</span>
+                  <span class="font-extrabold text-xl text-indigo-700" id="res-final-premium">-</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                  <span class="text-indigo-900 font-semibold">ประหยัดค่าเบี้ยได้:</span>
+                  <span class="font-bold text-emerald-700" id="res-saved">-</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-2 border-t border-indigo-200">
+                  <span class="font-bold text-indigo-950">ทุนประกันภัยใหม่:</span>
+                  <span class="font-extrabold text-base text-indigo-950" id="res-final-sum">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="goToStep(3)" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold transition shadow-sm">
+            ยืนยันข้อมูล & ดูใบเสนอราคา PDF →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: PRINT-READY A4 PDF QUOTATION -->
+    <section id="step-3" class="hidden space-y-4">
+      <!-- Action Toolbar -->
+      <div class="no-print bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="font-extrabold text-slate-700">ตั้งค่าใบเสนอราคา PDF:</span>
+          <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
+            <input type="checkbox" id="toggle-compare-box" checked onchange="recalculate()" class="rounded text-indigo-600" />
+            <span>แสดงตารางเปรียบเทียบสิทธิ์ A (ตาราง กธ.) vs B (ใบเตือนบริษัท)</span>
+          </label>
+          <span id="copy-line-toast" class="font-bold text-emerald-600 hidden">✅ คัดลอกข้อความสรุปสำหรับส่ง LINE แล้ว!</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="goToStep(2)" class="px-3.5 py-2 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+            ← แก้ไขข้อมูล
+          </button>
+          <button onclick="copyLineSummary()" class="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-800 font-bold hover:bg-slate-200">
+            💬 คัดลอกข้อความส่ง LINE
+          </button>
+          <button onclick="window.print()" class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-extrabold hover:bg-indigo-700 shadow-sm">
+            📄 Export PDF / พิมพ์ใบเสนอราคา (A4)
+          </button>
+        </div>
+      </div>
+
+      <!-- OFFICIAL A4 QUOTATION SHEET -->
+      <div id="pdf-sheet" class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-md max-w-4xl mx-auto space-y-6 text-slate-900">
+        <!-- Header Banner -->
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 border-b-2 border-slate-800 pb-5">
+          <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-indigo-700 text-white text-xs font-extrabold tracking-wide">
+              <span>CHUBB สามัคคีประกันภัย</span>
+              <span>×</span>
+              <span>FIN BROKER (ฟิน โบรคเกอร์)</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight" id="pdf-campaign-title">
+              โครงการ ย้ายค่าย "CHUBB ใจดี" x ฟิน โบรคเกอร์
+            </h2>
+            <p class="text-xs text-slate-500 font-medium" id="pdf-subtitle">
+              ใบเสนอราคาประกันภัยรถยนต์ประเภท 1 (โครงการโอนย้ายบริษัทประกันภัย)
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-1 shrink-0 min-w-[240px]">
+            <div class="flex justify-between gap-4">
+              <span class="text-slate-500">วันที่เสนอราคา:</span>
+              <strong id="pdf-quote-date">2026-10-28</strong>
+            </div>
+            <div class="flex justify-between gap-4">
+              <span class="text-slate-500">วันหมดอายุใบเสนอราคา:</span>
+              <strong id="pdf-quote-exp">2026-11-04</strong>
+            </div>
+            <div class="flex justify-between gap-4 pt-1 border-t border-slate-200">
+              <span class="text-slate-500">เจ้าหน้าที่ออกเอกสาร:</span>
+              <strong id="pdf-admin">ADMIN-FIN</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer & Vehicle Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+              <span class="font-extrabold text-sm text-slate-900">👤 ข้อมูลผู้เอาประกันภัย</span>
+              <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold">ลูกค้าโอนย้าย</span>
+            </div>
+            <div class="space-y-1.5">
+              <div class="flex gap-2">
+                <span class="text-slate-500 w-24 shrink-0">เรียนคุณ:</span>
+                <strong class="text-sm text-slate-900" id="pdf-customer">-</strong>
+              </div>
+              <div class="flex gap-2">
+                <span class="text-slate-500 w-24 shrink-0">ที่อยู่:</span>
+                <span class="font-medium text-slate-800" id="pdf-address">-</span>
+              </div>
+              <div class="flex gap-2 pt-1.5 border-t border-slate-200">
+                <span class="text-slate-500 w-24 shrink-0">บริษัทประกันเดิม:</span>
+                <strong class="text-slate-900" id="pdf-insurer">-</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+              <span class="font-extrabold text-sm text-slate-900">🚘 ข้อมูลรถยนต์ที่เอาประกันภัย</span>
+              <span id="pdf-age-badge" class="px-2.5 py-0.5 rounded bg-emerald-600 text-white font-bold">เข้าเงื่อนไข</span>
+            </div>
+            <div class="grid grid-cols-2 gap-y-2 gap-x-3">
+              <div>
+                <span class="text-slate-500">ยี่ห้อ / รุ่น:</span>
+                <div class="font-extrabold text-sm text-slate-900" id="pdf-brand-model">-</div>
+              </div>
+              <div>
+                <span class="text-slate-500">ทะเบียนรถ:</span>
+                <div class="font-extrabold text-sm text-slate-900" id="pdf-plate">-</div>
+              </div>
+              <div>
+                <span class="text-slate-500">จังหวัด / โซนพื้นที่:</span>
+                <div class="font-bold text-slate-800" id="pdf-province-region">-</div>
+              </div>
+              <div>
+                <span class="text-slate-500">ปีรถผลิต / อายุรถ:</span>
+                <div class="font-bold text-slate-800" id="pdf-year-age">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Offer Box -->
+        <div class="border-2 border-indigo-700 rounded-2xl overflow-hidden">
+          <div class="bg-indigo-700 text-white px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-extrabold">สรุปข้อเสนอเบี้ยประกันภัยและทุนประกันภัย (โครงการโอนย้าย)</h3>
+              <p class="text-xs text-indigo-100">เอกสารที่ใช้โอนย้าย: <strong id="pdf-doctype-banner">ใบเตือนโบรค/ตาราง กธ.</strong> (ไม่หมดอายุเกิน 30 วัน)</p>
+            </div>
+            <span id="pdf-pass-pill" class="px-3 py-1 rounded-full bg-white text-indigo-950 text-xs font-extrabold self-start sm:self-auto">
+              ✅ ผ่านเกณฑ์โครงการ
+            </span>
+          </div>
+
+          <div class="p-5 bg-white space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div class="text-xs font-bold text-slate-500">1. ข้อมูลตามกรมธรรม์เดิม</div>
+                <div class="flex justify-between items-baseline">
+                  <span class="text-xs text-slate-600">เบี้ยประกันเดิม:</span>
+                  <span class="text-base font-bold line-through text-slate-400" id="pdf-old-premium">-</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-2 border-t border-slate-200">
+                  <span class="text-xs text-slate-600">ทุนประกันเดิม:</span>
+                  <span class="text-sm font-bold text-slate-800" id="pdf-old-sum">-</span>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div class="text-xs font-bold text-slate-500">2. ส่วนลดโอนย้ายที่ได้รับ</div>
+                <div class="flex justify-between items-baseline">
+                  <span class="text-xs text-slate-600">อัตราส่วนลด:</span>
+                  <span class="text-base font-extrabold text-indigo-700" id="pdf-discount-pct">-</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-2 border-t border-slate-200">
+                  <span class="text-xs text-slate-600">ประหยัดค่าเบี้ยได้:</span>
+                  <span class="text-sm font-extrabold text-emerald-700" id="pdf-saved">-</span>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-xl bg-indigo-50 border-2 border-indigo-600 space-y-2">
+                <div class="text-xs font-extrabold text-indigo-950">3. ข้อเสนอใหม่จาก CHUBB</div>
+                <div class="flex justify-between items-baseline">
+                  <span class="text-xs font-bold text-indigo-950">เบี้ยโอนย้ายสุทธิ:</span>
+                  <span class="text-xl font-extrabold text-indigo-700" id="pdf-new-premium">-</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-2 border-t border-indigo-200">
+                  <span class="text-xs font-bold text-indigo-950">ทุนประกันภัยใหม่:</span>
+                  <span class="text-base font-extrabold text-slate-900" id="pdf-new-sum">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Option A vs Option B Comparison Table -->
+            <div id="pdf-compare-section" class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-800">📌 ตารางเปรียบเทียบสิทธิ์ตามประเภทเอกสารที่ใช้โอนย้าย (A vs B)</span>
+                <span class="text-xs text-slate-500">(ใบเตือน/หน้าตารางต้องไม่หมดอายุเกิน 30 วัน)</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse border border-slate-300 bg-white">
+                  <thead>
+                    <tr class="bg-slate-100 text-slate-700">
+                      <th class="p-2 border border-slate-300 text-left">ประเภทเอกสารที่ใช้แจ้งงาน</th>
+                      <th class="p-2 border border-slate-300 text-center">ส่วนลดค่าเบี้ย</th>
+                      <th class="p-2 border border-slate-300 text-right">เบี้ยโอนย้ายสุทธิ (บาท)</th>
+                      <th class="p-2 border border-slate-300 text-right">ประหยัดได้ (บาท)</th>
+                      <th class="p-2 border border-slate-300 text-right">ทุนประกันภัยใหม่ที่ได้ (บาท)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr id="row-opt-a" class="border-b border-slate-300">
+                      <td class="p-2 border border-slate-300 font-semibold">ทางเลือก A: ใช้ใบเตือนโบรคเกอร์ / ตาราง กธ. เดิม</td>
+                      <td class="p-2 border border-slate-300 text-center font-semibold">ลด 5% (0.05)</td>
+                      <td class="p-2 border border-slate-300 text-right font-bold" id="cmp-prem-a">-</td>
+                      <td class="p-2 border border-slate-300 text-right" id="cmp-save-a">-</td>
+                      <td class="p-2 border border-slate-300 text-right font-bold" id="cmp-sum-a">-</td>
+                    </tr>
+                    <tr id="row-opt-b">
+                      <td class="p-2 border border-slate-300 font-semibold">ทางเลือก B: ใช้ใบเตือนต่ออายุจากบริษัทประกันเดิมโดยตรง</td>
+                      <td class="p-2 border border-slate-300 text-center font-semibold">ลด 10% (0.10)</td>
+                      <td class="p-2 border border-slate-300 text-right font-bold" id="cmp-prem-b">-</td>
+                      <td class="p-2 border border-slate-300 text-right" id="cmp-save-b">-</td>
+                      <td class="p-2 border border-slate-300 text-right font-bold" id="cmp-sum-b">-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditions & Signature -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div class="md:col-span-2 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="font-extrabold text-sm text-slate-900">📸 เงื่อนไขการตรวจสภาพรถยนต์และประเภทรถที่รับประกัน</div>
+            <div class="font-semibold text-slate-800" id="pdf-cond-1">• ต้องถ่ายรูปรถยนต์ 4 ด้าน (หน้า, หลัง, ซ้าย, ขวา)</div>
+            <div class="font-semibold text-slate-800" id="pdf-cond-2">• รับเฉพาะรถเก๋ง 110 (ไม่แต่งซิ่ง) กระบะ 4 ประตู / กระบะ 320 (ไม่มีต่อเติมคอกหรือตู้ทึบใดๆ)</div>
+            <div class="text-slate-500 pt-1">• เอกสารใบเตือนต่ออายุ หรือ หน้าตารางกรมธรรม์เดิม ต้องไม่หมดอายุเกิน 30 วัน ณ วันแจ้งงาน</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="font-extrabold text-slate-900">ผู้เสนอราคา / ติดต่อสอบถาม</div>
+              <div class="text-slate-500 mt-0.5">ฟิน โบรคเกอร์ (Fin Insurance Broker)</div>
+            </div>
+            <div class="pt-3 border-t border-slate-200 flex justify-between items-end">
+              <span class="text-slate-500">ผู้ออกใบเสนอราคา:</span>
+              <strong class="text-slate-900" id="pdf-sign-admin">ADMIN-FIN</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-500">
+          <span>**เงื่อนไขการรับประกันภัย เป็นไปตามที่บริษัท ชับบ์สามัคคีประกันภัย จำกัด (มหาชน) กำหนด</span>
+          <span class="font-mono font-bold" id="pdf-version">Ver.01072026</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- GEMINI API KEY MODAL -->
+  <div id="api-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-extrabold text-slate-900">⚙️ ตั้งค่า Gemini AI OCR (อ่านรูปกรมธรรม์จริง)</h3>
+        <button onclick="toggleApiModal(false)" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        ใส่ <strong>Gemini API Key</strong> เพื่อให้ระบบใช้โมเดล <code>gemini-3.8-flash</code> อ่านข้อมูลจากรูปตารางกรมธรรม์หรือใบเตือนทุกบริษัทแบบอัตโนมัติ (คีย์จะถูกเก็บไว้ในเบราว์เซอร์ของคุณเท่านั้น ไม่ส่งไปเซิร์ฟเวอร์อื่น)
+      </p>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">เลือกโมเดล Google AI (รองรับ Free Tier ทั้งคู่)</label>
+        <select id="gemini-model-select" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold bg-slate-50 mb-3">
+          <option value="gemini-3.8-flash">gemini-3.8-flash (แนะนำ - แม่นยำสูง อ่านตารางซับซ้อน/ภาพถ่ายมือถือได้ดี)</option>
+          <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (ความเร็วสูง - เหมาะกับงานดึงข้อมูลเอกสารจำนวนมาก)</option>
+        </select>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Gemini API Key (รับฟรีที่ aistudio.google.com/apikey)</label>
+        <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono" />
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="toggleApiModal(false)" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold">ยกเลิก</button>
+        <button onclick="saveApiKey()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700">บันทึก API Key</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CURRENT_YEAR = 2026;
+
+    // Complete 21 Insurance Companies from CSV
+    const INSURERS = [
+      'บริษัท กรุงเทพประกันภัย จำกัด (มหาชน)',
+      'บริษัท วิริยะประกันภัย จำกัด',
+      'บริษัท โตเกียวมารีน คุ้มภัย ประกันภัย จำกัด',
+      'บริษัท เมืองไทยประกันภัย จำกัด (มหาชน)',
+      'บริษัท ธนชาตประกันภัย จำกัด',
+      'บริษัท ทิพยประกันภัย จำกัด (มหาชน)',
+      'บริษัท ประกันภัยไทยวิวัฒน์ จำกัด (มหาชน)',
+      'บริษัท ไอโออิ กรุงเทพประกันภัย จำกัด',
+      'บริษัท เออร์โกประกันภัย จำกัด (มหาชน)',
+      'บริษัท อลิอันซ์ ประกันภัย จำกัด (มหาชน)',
+      'บริษัท แอกซ่าประกันภัย จำกัด (มหาชน)',
+      'บริษัท เทเวศประกันภัย จำกัด (มหาชน)',
+      'บริษัท นวกิจประกันภัย จำกัด (มหาชน)',
+      'บริษัท กรุงไทยพานิชประกันภัย จำกัด',
+      'บริษัท มิตรแท้ประกันภัย จำกัด (มหาชน)',
+      'บริษัท ซมโปะ ประกันภัย (ประเทศไทย) จำกัด (มหาชน)',
+      'บริษัท อินทรประกันภัย จำกัด (มหาชน)',
+      'บริษัท ไทยไพบูลย์ประกันภัย จำกัด (มหาชน)',
+      'บริษัท ไทยเศรษฐกิจประกันภัย จํากัด (มหาชน)',
+      'บริษัท เอไอจี AIG',
+      'บริษัท เอ็ม เอส ไอ จี ประกันภัย',
+      'บริษัท แอลเอ็มจี ประกันภัย จำกัด (มหาชน)'
+    ];
+
+    // Complete 77 Provinces & Region Mapping from CSV
+    const PROVINCES = [
+      ['กรุงเทพมหานคร', 'กทม และปริมณฑล'],
+      ['จังหวัดนนทบุรี', 'กทม และปริมณฑล'],
+      ['จังหวัดปทุมธานี', 'กทม และปริมณฑล'],
+      ['จังหวัดสมุทรปราการ', 'กทม และปริมณฑล'],
+      ['จังหวัดสมุทรสาคร', 'กทม และปริมณฑล'],
+      ['จังหวัดนครปฐม', 'กทม และปริมณฑล'],
+      ['จังหวัดเชียงใหม่', 'ภาคเหนือ'],
+      ['จังหวัดเชียงราย', 'ภาคเหนือ'],
+      ['จังหวัดแพร่', 'ภาคเหนือ'],
+      ['จังหวัดแม่ฮ่องสอน', 'ภาคเหนือ'],
+      ['จังหวัดน่าน', 'ภาคเหนือ'],
+      ['จังหวัดพะเยา', 'ภาคเหนือ'],
+      ['จังหวัดลำปาง', 'ภาคเหนือ'],
+      ['จังหวัดลำพูน', 'ภาคเหนือ'],
+      ['จังหวัดอุตรดิตถ์', 'ภาคเหนือ'],
+      ['จังหวัดเพชรบูรณ์', 'ภาคกลาง'],
+      ['จังหวัดกำแพงเพชร', 'ภาคกลาง'],
+      ['จังหวัดชัยนาท', 'ภาคกลาง'],
+      ['จังหวัดนครนายก', 'ภาคกลาง'],
+      ['จังหวัดนครสวรรค์', 'ภาคกลาง'],
+      ['จังหวัดพระนครศรีอยุธยา', 'ภาคกลาง'],
+      ['จังหวัดพิจิตร', 'ภาคกลาง'],
+      ['จังหวัดพิษณุโลก', 'ภาคกลาง'],
+      ['จังหวัดลพบุรี', 'ภาคกลาง'],
+      ['จังหวัดสมุทรสงคราม', 'ภาคกลาง'],
+      ['จังหวัดสระบุรี', 'ภาคกลาง'],
+      ['จังหวัดสิงห์บุรี', 'ภาคกลาง'],
+      ['จังหวัดสุโขทัย', 'ภาคกลาง'],
+      ['จังหวัดสุพรรณบุรี', 'ภาคกลาง'],
+      ['จังหวัดอ่างทอง', 'ภาคกลาง'],
+      ['จังหวัดอุทัยธานี', 'ภาคกลาง'],
+      ['จังหวัดชลบุรี', 'ภาคตะวันออก'],
+      ['จังหวัดระยอง', 'ภาคตะวันออก'],
+      ['จังหวัดจันทบุรี', 'ภาคตะวันออก'],
+      ['จังหวัดตราด', 'ภาคตะวันออก'],
+      ['จังหวัดฉะเชิงเทรา', 'ภาคตะวันออก'],
+      ['จังหวัดปราจีนบุรี', 'ภาคตะวันออก'],
+      ['จังหวัดสระแก้ว', 'ภาคตะวันออก'],
+      ['จังหวัดกาญจนบุรี', 'ภาคตะวันตก'],
+      ['จังหวัดตาก', 'ภาคตะวันตก'],
+      ['จังหวัดประจวบคีรีขันธ์', 'ภาคตะวันตก'],
+      ['จังหวัดเพชรบุรี', 'ภาคตะวันตก'],
+      ['จังหวัดราชบุรี', 'ภาคตะวันตก'],
+      ['จังหวัดขอนแก่น', 'ภาคอีสาน'],
+      ['จังหวัดนครราชสีมา', 'ภาคอีสาน'],
+      ['จังหวัดอุดรธานี', 'ภาคอีสาน'],
+      ['จังหวัดอุบลราชธานี', 'ภาคอีสาน'],
+      ['จังหวัดกาฬสินธุ์', 'ภาคอีสาน'],
+      ['จังหวัดชัยภูมิ', 'ภาคอีสาน'],
+      ['จังหวัดนครพนม', 'ภาคอีสาน'],
+      ['จังหวัดบึงกาฬ', 'ภาคอีสาน'],
+      ['จังหวัดบุรีรัมย์', 'ภาคอีสาน'],
+      ['จังหวัดมหาสารคาม', 'ภาคอีสาน'],
+      ['จังหวัดมุกดาหาร', 'ภาคอีสาน'],
+      ['จังหวัดยโสธร', 'ภาคอีสาน'],
+      ['จังหวัดร้อยเอ็ด', 'ภาคอีสาน'],
+      ['จังหวัดเลย', 'ภาคอีสาน'],
+      ['จังหวัดศรีสะเกษ', 'ภาคอีสาน'],
+      ['จังหวัดสกลนคร', 'ภาคอีสาน'],
+      ['จังหวัดสุรินทร์', 'ภาคอีสาน'],
+      ['จังหวัดหนองคาย', 'ภาคอีสาน'],
+      ['จังหวัดหนองบัวลำภู', 'ภาคอีสาน'],
+      ['จังหวัดอำนาจเจริญ', 'ภาคอีสาน'],
+      ['จังหวัดกระบี่', 'ภาคใต้'],
+      ['จังหวัดชุมพร', 'ภาคใต้'],
+      ['จังหวัดตรัง', 'ภาคใต้'],
+      ['จังหวัดนครศรีธรรมราช', 'ภาคใต้'],
+      ['จังหวัดนราธิวาส', 'ภาคใต้'],
+      ['จังหวัดปัตตานี', 'ภาคใต้'],
+      ['จังหวัดพังงา', 'ภาคใต้'],
+      ['จังหวัดพัทลุง', 'ภาคใต้'],
+      ['จังหวัดภูเก็ต', 'ภาคใต้'],
+      ['จังหวัดระนอง', 'ภาคใต้'],
+      ['จังหวัดสงขลา', 'ภาคใต้'],
+      ['จังหวัดสตูล', 'ภาคใต้'],
+      ['จังหวัดสุราษฎร์ธานี', 'ภาคใต้'],
+      ['จังหวัดยะลา', 'ภาคใต้']
+    ];
+
+    const PRESETS = {
+      isuzu_2014: {
+        campaign: 'chubb_std',
+        customer: 'นางสาว นวภา เจริญหล้า',
+        address: '13 หมู่ 2 ต.ป่าตัน อ.แม่ทะ จ.ลำปาง 52150',
+        insurer: 'บริษัท กรุงเทพประกันภัย จำกัด (มหาชน)',
+        quotedate: '2026-10-28',
+        vehcode: '320',
+        brand: 'ISUZU',
+        model: 'D-MAX i-TEQ 3.0 RODEO SPACECAB',
+        plate: 'บธ-8396 อต',
+        province: 'จังหวัดอุตรดิตถ์|ภาคเหนือ',
+        year: 2014,
+        doctype: 'ใบเตือนโบรค/ตาราง กธ.',
+        oldPremium: 11314.34,
+        oldSum: 270000,
+        policyNo: '725-01331-113430'
+      },
+      vios_2019: {
+        campaign: 'chubb_std',
+        customer: 'คุณลูกค้า (Toyota Vios)',
+        address: 'จังหวัดปทุมธานี',
+        insurer: 'บริษัท ทิพยประกันภัย จำกัด (มหาชน)',
+        quotedate: '2026-07-01',
+        vehcode: '110',
+        brand: 'TOYOTA',
+        model: 'VIOS',
+        plate: '1กข-2019 ปท',
+        province: 'จังหวัดปทุมธานี|กทม และปริมณฑล',
+        year: 2019,
+        doctype: 'ใบเตือนโบรค/ตาราง กธ.',
+        oldPremium: 15000,
+        oldSum: 300000,
+        policyNo: 'TIP-2025-001'
+      },
+      ativ_2024: {
+        campaign: 'chubb_std',
+        customer: 'คุณลูกค้า (Yaris Ativ)',
+        address: 'จังหวัดชลบุรี',
+        insurer: 'บริษัท ประกันภัยไทยวิวัฒน์ จำกัด (มหาชน)',
+        quotedate: '2026-07-01',
+        vehcode: '110',
+        brand: 'TOYOTA',
+        model: 'YARIS ATIV',
+        plate: 'กข-2024 ชบ',
+        province: 'จังหวัดชลบุรี|ภาคตะวันออก',
+        year: 2024,
+        doctype: 'ใบเตือนบริษัท',
+        oldPremium: 14000,
+        oldSum: 450000,
+        policyNo: 'TVI-2025-002'
+      },
+      hyundai_2020: {
+        campaign: 'chubb_dealer7',
+        customer: 'คุณลูกค้า (ซ่อมห้าง 7 ปี)',
+        address: 'กรุงเทพมหานคร',
+        insurer: 'บริษัท ธนชาตประกันภัย จำกัด',
+        quotedate: '2026-07-01',
+        vehcode: '110',
+        brand: 'HYUNDAI',
+        model: 'ZS',
+        plate: '9กข-2020 กทม',
+        province: 'กรุงเทพมหานคร|กทม และปริมณฑล',
+        year: 2020,
+        doctype: 'ใบเตือนโบรค/ตาราง กธ.',
+        oldPremium: 17200,
+        oldSum: 850000,
+        policyNo: 'TBK-2025-003'
+      }
+    };
+
+    const CAMPAIGN_CONFIG = {
+      chubb_std: {
+        title: 'โครงการ ย้ายค่าย "CHUBB ใจดี" x ฟิน โบรคเกอร์',
+        subtitle: 'ใบเสนอราคาประกันภัยรถยนต์ ชั้น 1 (ซ่อมอู่มาตรฐานในเครือ CHUBB)',
+        maxAge: 15,
+        allowedCodes: ['110', '320'],
+        minPremiumBkk: 12000,
+        minPremiumUpcountry: 10000,
+        cond1: '• ต้องถ่ายรูปรถยนต์ 4 ด้าน (หน้า, หลัง, ซ้าย, ขวา)',
+        cond2: '• รับเฉพาะรถเก๋ง รหัส 110 (ไม่แต่งซิ่ง) และกระบะ 4 ประตู / กระบะรหัส 320 (ไม่มีการต่อเติมคอกหรือตู้ทึบใดๆ)',
+        version: 'Ver.01072026'
+      },
+      chubb_dealer7: {
+        title: 'โครงการ ย้ายค่าย "CHUBB ใจดี" x ฟิน โบรคเกอร์ (ซ่อมห้าง 7 ปี)',
+        subtitle: 'ใบเสนอราคาประกันภัยรถยนต์ ชั้น 1 (ซ่อมห้าง / ศูนย์บริการมาตรฐาน สูงสุด 7 ปี)',
+        maxAge: 7,
+        allowedCodes: ['110'],
+        minPremiumBkk: 17700,
+        minPremiumUpcountry: 17700,
+        cond1: '• ต้องถ่ายรูปรถยนต์ 4 ด้าน (รับเฉพาะรหัสรถ 110 เท่านั้น อายุรถไม่เกิน 7 ปี)',
+        cond2: '• รับเฉพาะรถเก๋ง 110 (ไม่แต่งซิ่ง) และกระบะ 4 ประตู (110) ที่ไม่มีการต่อเติมใดๆ',
+        version: 'Ver.01072026'
+      },
+      chubb_dealer5: {
+        title: 'โครงการ ย้ายค่าย "CHUBB ใจดี" x ฟิน โบรคเกอร์ (ซ่อมห้าง 5 ปี)',
+        subtitle: 'ใบเสนอราคาประกันภัยรถยนต์ ชั้น 1 (ซ่อมห้าง สำหรับรหัสรถ 320 อายุไม่เกิน 5 ปี)',
+        maxAge: 5,
+        allowedCodes: ['320'],
+        minPremiumBkk: 21500,
+        minPremiumUpcountry: 18500,
+        cond1: '• ต้องถ่ายรูปรถยนต์ 4 ด้าน (รับเฉพาะรหัสรถ 320 เท่านั้น อายุรถไม่เกิน 5 ปี)',
+        cond2: '• ไม่แต่งซิ่ง และไม่มีการต่อเติมคอก/ตู้ทึบใดๆ ทั้งสิ้น',
+        version: 'Ver.01072026'
+      },
+      koompai: {
+        title: 'โครงการ ย้ายค่าย "คุ้มภัย สุดฟิน" x ฟิน โบรคเกอร์',
+        subtitle: 'ใบเสนอราคาประกันภัยรถยนต์ ชั้น 1 (โครงการโอนย้ายเบี้ยเท่าเดิม)',
+        maxAge: 15,
+        allowedCodes: ['110'],
+        minPremiumBkk: 11000,
+        minPremiumUpcountry: 11000,
+        cond1: '• ถ่ายรูปตรวจสภาพรถยนต์โดยเจ้าหน้าที่ บ.คุ้มภัย',
+        cond2: '• รับเฉพาะรถเก๋ง (ไม่แต่งซิ่ง) และรถกระบะ 4 ประตูเท่านั้น',
+        version: 'Ver.01042026'
+      }
+    };
+
+    function initSelects() {
+      const insSelect = document.getElementById('f-insurer');
+      insSelect.innerHTML = INSURERS.map(i => `<option value="${i}">${i}</option>`).join('');
+
+      const provSelect = document.getElementById('f-province');
+      provSelect.innerHTML = PROVINCES.map(([p, r]) => `<option value="${p}|${r}">${p} (${r})</option>`).join('');
+
+      updateApiKeyStatus();
+    }
+
+    function toggleApiModal(show) {
+      document.getElementById('api-modal').classList.toggle('hidden', !show);
+      if (show) {
+        document.getElementById('gemini-api-key-input').value = localStorage.getItem('GEMINI_API_KEY') || '';
+        document.getElementById('gemini-model-select').value = localStorage.getItem('GEMINI_MODEL') || 'gemini-3.8-flash';
+      }
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('gemini-api-key-input').value.trim();
+      const model = document.getElementById('gemini-model-select').value;
+      localStorage.setItem('GEMINI_MODEL', model);
+      if (key) {
+        localStorage.setItem('GEMINI_API_KEY', key);
+      } else {
+        localStorage.removeItem('GEMINI_API_KEY');
+      }
+      updateApiKeyStatus();
+      toggleApiModal(false);
+    }
+
+    function updateApiKeyStatus() {
+      const hasKey = !!localStorage.getItem('GEMINI_API_KEY');
+      document.getElementById('api-status-label').textContent = hasKey ? 'AI OCR พร้อมใช้งาน ✅' : 'ตั้งค่า AI OCR';
+    }
+
+    function formatNumber(num, decimals = 0) {
+      return Number(num).toLocaleString('th-TH', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function addDays(dateStr, days) {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '2026-11-04';
+      d.setDate(d.getDate() + days);
+      return d.toISOString().split('T')[0];
+    }
+
+    function goToStep(step) {
+      [1, 2, 3].forEach(s => {
+        document.getElementById(`step-${s}`).classList.toggle('hidden', s !== step);
+        const btn = document.getElementById(`step-btn-${s}`);
+        if (s === step) {
+          btn.classList.add('bg-white', 'shadow-sm', 'text-indigo-700');
+        } else {
+          btn.classList.remove('bg-white', 'shadow-sm', 'text-indigo-700');
+        }
+      });
+      recalculate();
+    }
+
+    async function handleImageUpload(event) {
+      const file = event.target.files ? event.target.files[0] : event;
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const dataUrl = e.target.result;
+        const imgEl = document.getElementById('uploaded-img-el');
+        imgEl.src = dataUrl;
+        imgEl.classList.remove('hidden');
+
+        const apiKey = localStorage.getItem('GEMINI_API_KEY');
+        if (apiKey) {
+          await extractWithGemini(dataUrl, file.type || 'image/jpeg', apiKey);
+        } else {
+          document.getElementById('ocr-badge').textContent = 'โหมดตัวอย่าง (ใส่ API Key เพื่อใช้ AI จริง)';
+          loadPreset('isuzu_2014', true, false);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function extractWithGemini(dataUrl, mimeType, apiKey) {
+      const loadingBox = document.getElementById('ocr-loading');
+      loadingBox.classList.remove('hidden');
+      try {
+        const base64Data = dataUrl.split(',')[1];
+        const selectedModel = localStorage.getItem('GEMINI_MODEL') || 'gemini-3.8-flash';
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+            'Api-Revision': '2026-05-20'
+          },
+          body: JSON.stringify({
+            model: selectedModel,
+            input: [
+              {
+                type: 'text',
+                text: `คุณคือระบบ AI สกัดข้อมูลจากตารางกรมธรรม์ประกันภัยรถยนต์หรือใบเตือนต่ออายุของไทย (รองรับทุกบริษัทประกันและโบรคเกอร์) กรุณาอ่านรูปภาพและสกัดข้อมูลเป็น JSON ตามโครงสร้างที่กำหนด:
+- doc_type: หากในภาพเป็น "ตารางกรมธรรม์" หรือมีชื่อโบรคเกอร์/นายหน้า (เช่น ศรีกรุงโบรคเกอร์, ฟินโบรคเกอร์ ฯลฯ) ให้ระบุ "ใบเตือนโบรค/ตาราง กธ." หากเป็น "ใบเตือนต่ออายุ" ที่ออกจากบริษัทประกันภัยโดยตรงให้ระบุ "ใบเตือนบริษัท"
+- customer_name: ชื่อ-นามสกุลผู้เอาประกันภัย (ตัดคำว่า ผู้เอาประกันภัย ชื่อ ออก)
+- address: ที่อยู่ผู้เอาประกันภัย
+- previous_insurer: ชื่อบริษัทประกันภัยเดิม (เช่น บริษัท กรุงเทพประกันภัย จำกัด (มหาชน), บริษัท วิริยะประกันภัย จำกัด)
+- vehicle_code: รหัสรถยนต์ 3 หลัก ("110" สำหรับรถเก๋ง/กระบะ 4 ประตู หรือ "320" สำหรับกระบะบรรทุก/แค็บ)
+- brand: ยี่ห้อรถยนต์ภาษาอังกฤษตัวพิมพ์ใหญ่ (เช่น ISUZU, TOYOTA, HONDA, MITSUBISHI, HYUNDAI)
+- model: รุ่นรถยนต์ (เช่น D-MAX, VIOS, YARIS ATIV)
+- plate: เลขทะเบียนรถยนต์ (เช่น บธ-8396 อต)
+- province: ชื่อจังหวัดของทะเบียนรถ (ถ้าเป็นตัวย่อ เช่น อต = จังหวัดอุตรดิตถ์, กทม = กรุงเทพมหานคร, ชบ = จังหวัดชลบุรี ให้แปลงเป็นชื่อเต็ม)
+- year: ปี ค.ศ. ที่ผลิตรถยนต์ 4 หลัก (เช่น 2014 หากในเอกสารเป็น พ.ศ. ให้ลบ 543)
+- old_premium_gross: เบี้ยประกันภัยรวมภาษีอากรและอากรแสตมป์ (ช่อง "รวม" สุทธิที่ลูกค้าจ่ายจริง ไม่รวม พ.ร.บ.)
+- old_sum_insured: ทุนประกันภัยรถยนต์เสียหาย/สูญหายไฟไหม้ (ตัวเลขจำนวนเงินเอาประกันภัย)`
+              },
+              {
+                type: 'image',
+                data: base64Data,
+                mime_type: mimeType
+              }
+            ],
+            response_format: {
+              type: 'text',
+              mime_type: 'application/json',
+              schema: {
+                type: 'object',
+                properties: {
+                  doc_type: { type: 'string' },
+                  customer_name: { type: 'string' },
+                  address: { type: 'string' },
+                  previous_insurer: { type: 'string' },
+                  vehicle_code: { type: 'string' },
+                  brand: { type: 'string' },
+                  model: { type: 'string' },
+                  plate: { type: 'string' },
+                  province: { type: 'string' },
+                  year: { type: 'integer' },
+                  old_premium_gross: { type: 'number' },
+                  old_sum_insured: { type: 'number' }
+                }
+              }
+            }
+          })
+        });
+
+        const result = await response.json();
+        const textStep = result?.steps?.find(s => s.type === 'model_output')?.content?.find(c => c.type === 'text')?.text;
+        if (textStep) {
+          const parsed = JSON.parse(textStep);
+          applyExtractedData(parsed);
+        } else {
+          loadPreset('isuzu_2014', true, false);
+        }
+      } catch (err) {
+        console.error('Gemini OCR error:', err);
+        loadPreset('isuzu_2014', true, false);
+      } finally {
+        loadingBox.classList.add('hidden');
+      }
+    }
+
+    function applyExtractedData(d) {
+      document.getElementById('f-customer').value = d.customer_name || '';
+      document.getElementById('f-address').value = d.address || '';
+      document.getElementById('f-vehcode').value = d.vehicle_code === '320' ? '320' : '110';
+      document.getElementById('f-brand').value = d.brand || '';
+      document.getElementById('f-model').value = d.model || '';
+      document.getElementById('f-plate').value = d.plate || '';
+      document.getElementById('f-year').value = d.year || 2020;
+      document.getElementById('f-doctype').value = d.doc_type === 'ใบเตือนบริษัท' ? 'ใบเตือนบริษัท' : 'ใบเตือนโบรค/ตาราง กธ.';
+      document.getElementById('f-old-premium').value = d.old_premium_gross || 12000;
+      document.getElementById('f-old-sum').value = d.old_sum_insured || 300000;
+
+      // Match insurer
+      if (d.previous_insurer) {
+        const matchedIns = INSURERS.find(i => i.includes(d.previous_insurer) || d.previous_insurer.includes(i.replace('บริษัท ', '').replace(' จำกัด (มหาชน)', '')));
+        if (matchedIns) document.getElementById('f-insurer').value = matchedIns;
+      }
+
+      // Match province
+      if (d.province) {
+        const matchedProv = PROVINCES.find(([p]) => p.includes(d.province) || d.province.includes(p.replace('จังหวัด', '')));
+        if (matchedProv) document.getElementById('f-province').value = `${matchedProv[0]}|${matchedProv[1]}`;
+      }
+
+      document.getElementById('ocr-badge').textContent = 'AI สแกนสำเร็จ ✨';
+      document.getElementById('preview-doc-title').textContent = `${document.getElementById('f-doctype').value}: ${document.getElementById('f-insurer').value}`;
+      document.getElementById('preview-doc-sub').textContent = `ทะเบียน ${d.plate || '-'} | ปี ${d.year || '-'}`;
+      goToStep(2);
+    }
+
+    function loadPreset(key, keepUploadedImg = false, jumpToPdf = false) {
+      const p = PRESETS[key];
+      if (!p) return;
+      if (!keepUploadedImg) {
+        document.getElementById('uploaded-img-el').classList.add('hidden');
+      }
+      document.getElementById('f-campaign').value = p.campaign;
+      document.getElementById('f-customer').value = p.customer;
+      document.getElementById('f-address').value = p.address;
+      document.getElementById('f-insurer').value = p.insurer;
+      document.getElementById('f-quotedate').value = p.quotedate;
+      document.getElementById('f-vehcode').value = p.vehcode;
+      document.getElementById('f-brand').value = p.brand;
+      document.getElementById('f-model').value = p.model;
+      document.getElementById('f-plate').value = p.plate;
+      document.getElementById('f-province').value = p.province;
+      document.getElementById('f-year').value = p.year;
+      document.getElementById('f-doctype').value = p.doctype;
+      document.getElementById('f-old-premium').value = p.oldPremium;
+      document.getElementById('f-old-sum').value = p.oldSum;
+
+      document.getElementById('preview-doc-title').textContent = `${p.doctype}: ${p.insurer}`;
+      document.getElementById('preview-doc-sub').textContent = `เลขที่กรมธรรม์: ${p.policyNo} | ทะเบียน ${p.plate}`;
+
+      goToStep(jumpToPdf ? 3 : 2);
+    }
+
+    function switchDocType(type) {
+      document.getElementById('f-doctype').value = type;
+      recalculate();
+    }
+
+    function recalculate() {
+      const campaignKey = document.getElementById('f-campaign').value;
+      const cfg = CAMPAIGN_CONFIG[campaignKey];
+      const customer = document.getElementById('f-customer').value || 'ลูกค้าผู้มีอุปการคุณ';
+      const address = document.getElementById('f-address').value || '-';
+      const adminName = document.getElementById('f-admin').value || 'ADMIN-FIN';
+      const insurer = document.getElementById('f-insurer').value;
+      const quoteDate = document.getElementById('f-quotedate').value || '2026-10-28';
+      const quoteExp = addDays(quoteDate, 7);
+      const vehcode = document.getElementById('f-vehcode').value;
+      const brand = document.getElementById('f-brand').value;
+      const model = document.getElementById('f-model').value;
+      const plate = document.getElementById('f-plate').value || '-';
+      const [provinceName, regionName] = (document.getElementById('f-province').value || 'จังหวัดอุตรดิตถ์|ภาคเหนือ').split('|');
+      const year = parseInt(document.getElementById('f-year').value || '2020', 10);
+      const doctype = document.getElementById('f-doctype').value;
+      const oldPremium = parseFloat(document.getElementById('f-old-premium').value || '0');
+      const oldSum = parseFloat(document.getElementById('f-old-sum').value || '0');
+      const roundSum = document.getElementById('f-round-sum').checked;
+      const showCompare = document.getElementById('toggle-compare-box').checked;
+
+      // 1. Age & Eligibility
+      const age = CURRENT_YEAR - year + 1;
+      const ageOk = age >= 1 && age <= cfg.maxAge && year >= 2012;
+      const codeOk = cfg.allowedCodes.includes(vehcode);
+      const ageStatusText = ageOk ? 'เข้าเงื่อนไข' : 'เกินเกณฑ์อายุรถ';
+
+      // 2. Minimum Premium Floor
+      const isBkk = regionName === 'กทม และปริมณฑล';
+      const minPremium = isBkk ? cfg.minPremiumBkk : cfg.minPremiumUpcountry;
+
+      // 3. Discount & New Premium
+      const discountRate = campaignKey === 'koompai' ? 0 : (doctype === 'ใบเตือนบริษัท' ? 0.10 : 0.05);
+      const rawDiscounted = oldPremium * (1 - discountRate);
+      const isFloorHit = rawDiscounted < minPremium;
+      const finalPremium = isFloorHit ? minPremium : rawDiscounted;
+      const savedAmount = oldPremium - finalPremium;
+      const passText = isFloorHit ? `ติดเบี้ยขั้นต่ำ (${formatNumber(minPremium)} บ.)` : 'ผ่านเกณฑ์';
+
+      // 4. Option A vs Option B
+      const premA = Math.max(oldPremium * 0.95, minPremium);
+      const saveA = oldPremium - premA;
+      const sumA_raw = Math.round(oldSum * 0.90);
+      const sumA = roundSum ? Math.floor(sumA_raw / 10000) * 10000 : sumA_raw;
+
+      const premB = Math.max(oldPremium * 0.90, minPremium);
+      const saveB = oldPremium - premB;
+      const sumB = Math.round(oldSum * 1.00);
+
+      const finalSum = doctype === 'ใบเตือนบริษัท' ? sumB : sumA;
+      const hasDecimals = oldPremium % 1 !== 0 || finalPremium % 1 !== 0;
+      const dec = hasDecimals ? 2 : 0;
+
+      // Update Step 2 Checklist
+      document.getElementById('rule-checklist').innerHTML = `
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+          <span>อายุรถ (${age} ปี / ไม่เกิน ${cfg.maxAge} ปี)</span>
+          <span class="font-bold">${ageOk ? '✅ เข้าเงื่อนไข' : '❌ เกินเกณฑ์'}</span>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+          <span>รหัสรถ (${vehcode} / รับ ${cfg.allowedCodes.join(',')})</span>
+          <span class="font-bold">${codeOk ? '✅ เข้าเงื่อนไข' : '❌ ไม่ตรงรหัส'}</span>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+          <span>เบี้ยขั้นต่ำ (${regionName}: ${formatNumber(minPremium)} บ.)</span>
+          <span class="font-bold">${isFloorHit ? '⚠️ ติดขั้นต่ำ' : '✅ ผ่านเกณฑ์'}</span>
+        </div>
+      `;
+
+      // Update Smart Tip
+      const tipText = document.getElementById('smart-tip-text');
+      const tipBtn = document.getElementById('smart-tip-btn');
+      if (doctype === 'ใบเตือนโบรค/ตาราง กธ.' && campaignKey !== 'koompai') {
+        tipText.innerHTML = `ปัจจุบันใช้ <strong>ตาราง กธ.</strong> (ลด 5% เหลือ <strong>${formatNumber(finalPremium, dec)}</strong> บ. | ทุน <strong>${formatNumber(finalSum)}</strong> บ.)<br/>หากมี <strong>"ใบเตือนบริษัท"</strong> จะลด 10% เหลือ <strong>${formatNumber(premB, dec)}</strong> บ. และได้<strong>ทุนเต็ม ${formatNumber(sumB)} บ.</strong>`;
+        tipBtn.textContent = 'ลองสลับเป็น "ใบเตือนบริษัท" (ลด 10% + ทุน 100%)';
+        tipBtn.onclick = () => switchDocType('ใบเตือนบริษัท');
+      } else {
+        tipText.innerHTML = `ปัจจุบันใช้ <strong>ใบเตือนบริษัท</strong> ได้รับส่วนลดสูงสุด 10% และได้ทุนประกันเท่าเดิม 100% (${formatNumber(sumB)} บาท)`;
+        tipBtn.textContent = 'สลับกลับเป็น "ใบเตือนโบรค/ตาราง กธ." (ลด 5%)';
+        tipBtn.onclick = () => switchDocType('ใบเตือนโบรค/ตาราง กธ.');
+      }
+
+      // Update Step 2 Summary
+      document.getElementById('calc-status-badge').textContent = passText;
+      document.getElementById('res-zone-age').textContent = `${regionName} / ${age} ปี (${ageStatusText})`;
+      document.getElementById('res-old-premium').textContent = `${formatNumber(oldPremium, dec)} บาท`;
+      document.getElementById('res-discount-rate').textContent = `${(discountRate * 100).toFixed(0)}% (${doctype})`;
+      document.getElementById('res-final-premium').textContent = `${formatNumber(finalPremium, dec)} บาท`;
+      document.getElementById('res-saved').textContent = `${formatNumber(savedAmount, dec)} บาท`;
+      document.getElementById('res-final-sum').textContent = `${formatNumber(finalSum)} บาท`;
+
+      // Update Step 3 Printable PDF Sheet
+      document.getElementById('pdf-campaign-title').textContent = cfg.title;
+      document.getElementById('pdf-subtitle').textContent = cfg.subtitle;
+      document.getElementById('pdf-quote-date').textContent = quoteDate;
+      document.getElementById('pdf-quote-exp').textContent = quoteExp;
+      document.getElementById('pdf-admin').textContent = adminName;
+      document.getElementById('pdf-sign-admin').textContent = adminName;
+
+      document.getElementById('pdf-customer').textContent = customer;
+      document.getElementById('pdf-address').textContent = address;
+      document.getElementById('pdf-insurer').textContent = insurer;
+
+      document.getElementById('pdf-age-badge').textContent = `รหัส ${vehcode} • ${ageStatusText}`;
+      document.getElementById('pdf-brand-model').textContent = `${brand} ${model}`;
+      document.getElementById('pdf-plate').textContent = plate;
+      document.getElementById('pdf-province-region').textContent = `${provinceName} (${regionName})`;
+      document.getElementById('pdf-year-age').textContent = `ค.ศ. ${year} (อายุ ${age} ปี)`;
+
+      document.getElementById('pdf-doctype-banner').textContent = doctype;
+      document.getElementById('pdf-pass-pill').textContent = isFloorHit
+        ? `⚠️ ${passText}`
+        : '✅ ผ่านเกณฑ์โครงการ';
+
+      document.getElementById('pdf-old-premium').textContent = `${formatNumber(oldPremium, dec)} บาท`;
+      document.getElementById('pdf-old-sum').textContent = `${formatNumber(oldSum)} บาท`;
+      document.getElementById('pdf-discount-pct').textContent = `${(discountRate * 100).toFixed(0)}% (${doctype})`;
+      document.getElementById('pdf-saved').textContent = `${formatNumber(savedAmount, dec)} บาท`;
+      document.getElementById('pdf-new-premium').textContent = `${formatNumber(finalPremium, dec)} บาท`;
+      document.getElementById('pdf-new-sum').textContent = `${formatNumber(finalSum)} บาท`;
+
+      document.getElementById('pdf-compare-section').classList.toggle('hidden', !showCompare);
+      document.getElementById('cmp-prem-a').textContent = `${formatNumber(premA, dec)}`;
+      document.getElementById('cmp-save-a').textContent = `${formatNumber(saveA, dec)}`;
+      document.getElementById('cmp-sum-a').textContent = `${formatNumber(sumA)} (90%)`;
+
+      document.getElementById('cmp-prem-b').textContent = `${formatNumber(premB, dec)}`;
+      document.getElementById('cmp-save-b').textContent = `${formatNumber(saveB, dec)}`;
+      document.getElementById('cmp-sum-b').textContent = `${formatNumber(sumB)} (100%)`;
+
+      document.getElementById('row-opt-a').className = doctype !== 'ใบเตือนบริษัท'
+        ? 'bg-indigo-50 font-bold text-indigo-950'
+        : '';
+      document.getElementById('row-opt-b').className = doctype === 'ใบเตือนบริษัท'
+        ? 'bg-indigo-50 font-bold text-indigo-950'
+        : '';
+
+      document.getElementById('pdf-cond-1').textContent = cfg.cond1;
+      document.getElementById('pdf-cond-2').textContent = cfg.cond2;
+      document.getElementById('pdf-version').textContent = cfg.version;
+    }
+
+    function copyLineSummary() {
+      const customer = document.getElementById('pdf-customer').textContent;
+      const car = document.getElementById('pdf-brand-model').textContent;
+      const plate = document.getElementById('pdf-plate').textContent;
+      const oldPrem = document.getElementById('pdf-old-premium').textContent;
+      const newPrem = document.getElementById('pdf-new-premium').textContent;
+      const saved = document.getElementById('pdf-saved').textContent;
+      const newSum = document.getElementById('pdf-new-sum').textContent;
+      const doctype = document.getElementById('pdf-doctype-banner').textContent;
+
+      const text = [
+        `📋 ใบเสนอราคาโครงการย้ายค่าย "CHUBB ใจดี" x ฟิน โบรคเกอร์`,
+        `เรียนคุณ: ${customer}`,
+        `รถยนต์: ${car} (ทะเบียน ${plate})`,
+        `--------------------------`,
+        `• โอนย้ายโดยใช้: ${doctype}`,
+        `• เบี้ยประกันเดิม: ${oldPrem}`,
+        `• เบี้ยโอนย้ายสุทธิ: ${newPrem} (ประหยัด ${saved})`,
+        `• ทุนประกันภัยใหม่: ${newSum}`,
+        `--------------------------`,
+        `*หมายเหตุ: ถ่ายรูปรถ 4 ด้าน / เอกสารเดิมไม่หมดอายุเกิน 30 วัน`
+      ].join('\n');
+
+      navigator.clipboard.writeText(text);
+      const toast = document.getElementById('copy-line-toast');
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+
+    // Support Ctrl+V / Cmd+V image paste anywhere on page
+    window.addEventListener('paste', (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) handleImageUpload(file);
+          break;
+        }
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSelects();
+      loadPreset('isuzu_2014', false, true);
+    });
+  </script>
+</body>
+</html>
